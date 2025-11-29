@@ -1,0 +1,42 @@
+{
+  "name": "cafe",
+  "version": "0.0.0-alpha.0",
+  "description": "A simple, wholesome cafe that serves you nibbles.",
+  "homepage": "https://github.com/natsie/cafe#readme",
+  "author": "Oghenevwegba Obire",
+  "license": "MIT",
+  "keywords": [
+    "cafe",
+    "file-server",
+    "http-server",
+    "development",
+    "http"
+  ],
+  "type": "module",
+  "main": "src/cafe.ts",
+  "bin": {
+    "cafe": "src/bin.ts"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/bin.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "hono": "^4.10.6",
+    "mime-types": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.3",
+    "@types/mime-types": "^3.0.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
+  },
+  "bugs": {
+    "url": "https://github.com/natsie/cafe/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/natsie/cafe.git"
+  }
+}
