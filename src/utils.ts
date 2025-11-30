@@ -21,7 +21,7 @@ export const createReadStream = async function* (
 
   try {
     let offset = options?.offset ?? 0;
-    let endOffset = options?.length == null ? stat.size : offset + ~~options.length;
+    let endOffset = options?.length == null ? stat.size : offset + Math.floor(options.length);
     let chunkSize = options?.chunkSize ?? 16384;
 
     while (offset < endOffset) {
@@ -60,7 +60,6 @@ export const getAddressInfo = (server: HTTPServer | HTTP2Server): AddressInfo =>
 
   const url = new URL(address);
   const family = url.hostname === "::" ? "IPv6" : "IPv4";
-  console.log("Returning constructed address object.");
   return {
     address: url.hostname,
     family: family,
@@ -83,7 +82,7 @@ export const obj = {
     for (const key of keys) result[key] = obj[key];
     return result;
   },
-  merge: <T, U, V, W>(...sources: [T?, U?, V?, W?]): {} & T & U & V & W => {
+  merge: <T, U, V, W>(...sources: [T?, U?, V?, W?]): T & U & V & W => {
     return Object.assign({}, ...sources);
   },
   mergeInto: <T extends object, U, V, W>(...sources: [T, U?, V?, W?]): T & U & V & W => {
@@ -111,7 +110,7 @@ export const numberToBytes = (num: number | bigint): number[] => {
 
   const number = BigInt(num);
   const bytes: number[] = [number < biCache[0] ? 0b10 : 0b11];
-  let value = number < 0 ? number * -1n : number;
+  let value = number < biCache[0] ? number * -1n : number;
 
   do {
     bytes.push(Number(value & biCache[2]));
@@ -122,11 +121,12 @@ export const numberToBytes = (num: number | bigint): number[] => {
 };
 
 export const bytesToNumber = (bytes: number[]): number | bigint => {
+  if (bytes.length < 1) return 0;
+
   if (check.number.integer(bytes[0]) && bytes[0] === 0) {
     return nonNullable(new Float64Array(new Uint8Array(bytes.slice(1)).buffer)[0]);
   }
 
-  if (bytes.length < 1) return 0;
   const isPositive = nonNullable(bytes.shift()) & 0b1;
   let result = 0n;
 
