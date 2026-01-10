@@ -7,9 +7,12 @@ import type * as ICafe from "./types/cafe.d.ts";
 import { createDeferred, createReadStream, getAddressInfo, noop, obj } from "./utils.ts";
 import { matchesGlob, resolve, sep } from "node:path";
 
-import manifest from "../package.json" with { type: "json" };
 import { check, nonNullable } from "./validate.ts";
 import { open, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
+
+const manifestText = await readFile(resolve(import.meta.dirname, "../package.json"), "utf8");
+const manifest: typeof import("../package.json") = JSON.parse(manifestText);
 
 export const cafeStatusMap: ICafe.StatusMap = {
   ACQUIRING_FILESYSTEM_HANDLE: [

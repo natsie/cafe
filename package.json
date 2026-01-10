@@ -1,8 +1,8 @@
 {
   "name": "cafe",
-  "version": "0.0.0-alpha.0",
+  "version": "0.0.0-alpha1",
   "description": "A simple, wholesome cafe that serves you nibbles.",
-  "homepage": "https://github.com/natsie/cafe#readme",
+  "homepage": "https://github.com/NullPointerInclusion/cafe#readme",
   "author": "Oghenevwegba Obire",
   "license": "MIT",
   "keywords": [
@@ -13,9 +13,9 @@
     "http"
   ],
   "type": "module",
-  "main": "src/cafe.ts",
+  "main": "dist/cafe.js",
   "bin": {
-    "cafe": "src/bin.ts"
+    "cafe": "dist/bin.js"
   },
   "scripts": {
     "dev": "bun run --watch src/bin.ts",
@@ -32,11 +32,17 @@
     "prettier": "^3.6.2",
     "typescript": "^5.9.3"
   },
+  "files": [
+    "dist/",
+    "LICENSE",
+    "package.json",
+    "README.md"
+  ],
   "bugs": {
-    "url": "https://github.com/natsie/cafe/issues"
+    "url": "https://github.com/NullPointerInclusion/cafe/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/natsie/cafe.git"
+    "url": "git+https://github.com/NullPointerInclusion/cafe.git"
   }
 }
