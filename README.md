@@ -121,6 +121,7 @@ Creates a new `Cafe` instance.
   - `port`: Default port (default: 3333).
   - `basePath`: Root directory to serve.
   - `menu`: Object with `include` and `exclude` arrays (strings or RegExps).
+  - `alias`: Object mapping path prefixes to other locations.
   - `exposeAPI`: (Experimental) Expose internal API.
   - `broadcastVersion`: Send version header.
 
