@@ -10,7 +10,6 @@ Whether you need to quickly serve a directory for development or require a progr
 
 - **📂 Static File Serving:** Serve files from any directory with ease.
 - **⚡ Range Requests:** Full support for HTTP Range headers, enabling partial content loading and media streaming.
-- **📦 Multipart Ranges:** Efficiently serve multiple file parts in a single response.
 - **🛡️ Menu System:** Control exactly what is served using glob patterns or regular expressions for inclusion and exclusion.
 - **🔄 Resilient Startup:** Automatically detects busy ports and can retry or increment the port number.
 - **🛠️ CLI & API:** Use it directly from the command line or integrate it into your own TypeScript/JavaScript application.
@@ -21,7 +20,7 @@ Currently, Café is in alpha. You can run it directly from the source or install
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (recommended for development) or Node.js.
+- Node.js v25 or later.
 
 ### Clone and Run
 
@@ -31,10 +30,10 @@ git clone https://github.com/natsie/cafe.git
 cd cafe
 
 # Install dependencies
-bun install
+npm install
 
 # Run the server
-bun run src/bin.ts
+node src/bin.ts
 ```
 
 ## Usage
@@ -45,19 +44,19 @@ You can start Café directly from the command line. By default, it serves the cu
 
 ```bash
 # Start with defaults
-bun run src/bin.ts
+node src/bin.ts
 
 # Specify a different port
-bun run src/bin.ts --port 8080
+node src/bin.ts --port 8080
 
 # Serve a specific directory
-bun run src/bin.ts --basePath ./public
+node src/bin.ts --basePath ./public
 
 # Only serve .png files
-bun run src/bin.ts --include "**/*.png"
+node src/bin.ts --include "**/*.png"
 
 # Exclude node_modules
-bun run src/bin.ts --exclude "**/node_modules/**"
+node src/bin.ts --exclude "**/node_modules/**"
 ```
 
 #### CLI Options
@@ -68,8 +67,8 @@ bun run src/bin.ts --exclude "**/node_modules/**"
 | `--basePath`             | The root directory to serve files from.                                             | `process.cwd()` |
 | `--include`              | Glob pattern or RegExp (`regexp:...`) to include files. Can be used multiple times. | `["**/*"]`      |
 | `--exclude`              | Glob pattern or RegExp to exclude files.                                            | `[]`            |
+| `--alias`                | Map specific paths to other locations. Format: `key=value` (comma-separated).       | `{}`            |
 | `--broadcastVersion`     | Adds a `Cafe-Version` header to responses.                                          | `false`         |
-| `--debugResponseHeaders` | Adds detailed failure reasons to response headers.                                  | `false`         |
 
 ### Programmatic API
 
@@ -124,7 +123,6 @@ Creates a new `Cafe` instance.
   - `menu`: Object with `include` and `exclude` arrays (strings or RegExps).
   - `exposeAPI`: (Experimental) Expose internal API.
   - `broadcastVersion`: Send version header.
-  - `debugResponseHeaders`: Send debug headers.
 
 #### `listen(port?: number, options?: ICafe.ListenOptions): Promise<Cafe>`
 
