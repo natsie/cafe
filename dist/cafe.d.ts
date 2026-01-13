@@ -1,6 +1,5 @@
-import { EventEmitter } from "node:events";
+import EventEmitter from "node:events";
 import type * as ICafe from "./types/cafe.d.ts";
-export declare const cafeStatusMap: ICafe.StatusMap;
 declare class Cafe extends EventEmitter<ICafe.EventMap> {
     config: ICafe.Config;
     private hono;

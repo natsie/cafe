@@ -14,10 +14,9 @@ const config: Config & { port: number } = {
   },
   exposeAPI: false,
   broadcastVersion: false,
-  debugResponseHeaders: false,
 };
 
-const booleanOptions = new Set(["exposeAPI", "broadcastVersion", "debugResponseHeaders"]);
+const booleanOptions = new Set(["exposeAPI", "broadcastVersion"]);
 let currentOption: string = "";
 
 for (const arg of argv.slice(2)) {
@@ -39,6 +38,16 @@ for (const arg of argv.slice(2)) {
     case "":
     case "basePath": {
       config.basePath = option;
+      break;
+    }
+    case "alias": {
+      const mappings = option.split(",");
+
+      for (const mapping of mappings) {
+        const [key, value] = mapping.split("=");
+        if (key && value) config.alias[key] = value;
+      }
+
       break;
     }
     case "port": {

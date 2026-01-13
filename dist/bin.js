@@ -11,9 +11,8 @@ const config = {
     },
     exposeAPI: false,
     broadcastVersion: false,
-    debugResponseHeaders: false,
 };
-const booleanOptions = new Set(["exposeAPI", "broadcastVersion", "debugResponseHeaders"]);
+const booleanOptions = new Set(["exposeAPI", "broadcastVersion"]);
 let currentOption = "";
 for (const arg of argv.slice(2)) {
     let option = arg;
@@ -32,6 +31,15 @@ for (const arg of argv.slice(2)) {
         case "":
         case "basePath": {
             config.basePath = option;
+            break;
+        }
+        case "alias": {
+            const mappings = option.split(",");
+            for (const mapping of mappings) {
+                const [key, value] = mapping.split("=");
+                if (key && value)
+                    config.alias[key] = value;
+            }
             break;
         }
         case "port": {

@@ -1,13 +1,7 @@
+import { check, nonNullable } from "broadutils/validate";
 import type { PathLike } from "node:fs";
-import type { CreateReadStreamOptions, Deferred } from "./types/utils.d.ts";
-
 import { open, readFile } from "node:fs/promises";
-import type { Server as HTTPServer } from "node:http";
-import type { Http2Server as HTTP2Server } from "node:http2";
-import type { AddressInfo } from "node:net";
-import { check, nonNullable } from "./validate.ts";
-
-export const noop = (...args: unknown[]): null => null;
+import type { CreateReadStreamOptions } from "./types/utils.d.ts";
 
 export const createReadStream = async function* (
   path: PathLike,
@@ -36,69 +30,41 @@ export const createReadStream = async function* (
   }
 };
 
-export const createDeferred = async <T>(): Promise<Deferred<T>> => {
-  const deferred: Deferred<T> = {
-    promise: {} as Promise<T>,
-    resolve: noop,
-    reject: noop,
-  };
+export const parseRangeHeader = (
+  range: string,
+  fileSize: number,
+): [startIndex: number, byteCount: number][] | null => {
+  if (!range) return [[0, fileSize]];
 
-  await new Promise((rresolved) => {
-    deferred.promise = new Promise<T>((resolve, reject) => {
-      deferred.resolve = resolve;
-      deferred.reject = reject;
-      rresolved(null);
-    });
-  });
+  const ranges: [number, number][] = [];
+  const parts = range.split(/,\s*/);
+  const rangeRegex = /(?:(\d+)\-(\d+)?)|(?:(\-\d+))/;
 
-  return deferred;
-};
+  for (const part of parts) {
+    // match format: [input, start, end, lastN]
+    const match = part.match(rangeRegex);
+    if (!match) return null;
 
-export const getAddressInfo = (server: HTTPServer | HTTP2Server): AddressInfo => {
-  const address = nonNullable(server.address());
-  if (check.object(address)) return address as AddressInfo;
-
-  const url = new URL(address);
-  const family = url.hostname === "::" ? "IPv6" : "IPv4";
-  return {
-    address: url.hostname,
-    family: family,
-    port: +url.port,
-  };
-};
-
-export const obj = {
-  omit: <T extends {}, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> => {
-    const result = {} as Omit<T, K>;
-    const toOmit = new Set(keys);
-    for (const [key, value] of Object.entries(obj)) {
-      if (toOmit.has(key as K)) continue;
-      result[key as Exclude<keyof T, K>] = value as T[Exclude<keyof T, K>];
+    if (match[1]) {
+      const start = Number.parseInt(match[1]);
+      const end = match[2] != null ? Number.parseInt(match[2]) : fileSize - 1;
+      if (start > end) return null;
+      if (start < 0 || end < 0) return null;
+      if (start > fileSize - 1 || end > fileSize - 1) return null;
+      ranges.push([start, end - start + 1]);
+      continue;
     }
-    return result;
-  },
-  pick: <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> => {
-    const result = {} as Pick<T, K>;
-    for (const key of keys) result[key] = obj[key];
-    return result;
-  },
-  merge: <T, U, V, W>(...sources: [T?, U?, V?, W?]): T & U & V & W => {
-    return Object.assign({}, ...sources);
-  },
-  mergeInto: <T extends object, U, V, W>(...sources: [T, U?, V?, W?]): T & U & V & W => {
-    return Object.assign(...sources);
-  },
-};
 
-export const str = {
-  substitute: (
-    inputStr: string,
-    substitionMap: Map<string | RegExp, string> | Record<string, string>,
-  ) => {
-    const subPairs =
-      substitionMap instanceof Map ? [...substitionMap] : Object.entries(substitionMap);
-    return subPairs.reduce((acc, [key, value]) => acc.replaceAll(key, value), inputStr);
-  },
+    if (match[3]) {
+      const lastN = Number.parseInt(match[3]);
+      const start = fileSize + lastN;
+      if (start < 0) return null;
+      ranges.push([start, -lastN]);
+      continue;
+    }
+  }
+
+  return ranges;
 };
 
 export const numberToBytes = (num: number | bigint): number[] => {

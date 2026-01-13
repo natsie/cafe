@@ -1,6 +1,5 @@
+import { check, nonNullable } from "broadutils/validate";
 import { open, readFile } from "node:fs/promises";
-import { check, nonNullable } from "./validate.js";
-export const noop = (...args) => null;
 export const createReadStream = async function* (path, options) {
     const handle = await open(path);
     const stat = await handle.stat().catch((error) => {
@@ -22,62 +21,39 @@ export const createReadStream = async function* (path, options) {
         await handle.close();
     }
 };
-export const createDeferred = async () => {
-    const deferred = {
-        promise: {},
-        resolve: noop,
-        reject: noop,
-    };
-    await new Promise((rresolved) => {
-        deferred.promise = new Promise((resolve, reject) => {
-            deferred.resolve = resolve;
-            deferred.reject = reject;
-            rresolved(null);
-        });
-    });
-    return deferred;
-};
-export const getAddressInfo = (server) => {
-    const address = nonNullable(server.address());
-    if (check.object(address))
-        return address;
-    const url = new URL(address);
-    const family = url.hostname === "::" ? "IPv6" : "IPv4";
-    return {
-        address: url.hostname,
-        family: family,
-        port: +url.port,
-    };
-};
-export const obj = {
-    omit: (obj, keys) => {
-        const result = {};
-        const toOmit = new Set(keys);
-        for (const [key, value] of Object.entries(obj)) {
-            if (toOmit.has(key))
-                continue;
-            result[key] = value;
+export const parseRangeHeader = (range, fileSize) => {
+    if (!range)
+        return [[0, fileSize]];
+    const ranges = [];
+    const parts = range.split(/,\s*/);
+    const rangeRegex = /(?:(\d+)\-(\d+)?)|(?:(\-\d+))/;
+    for (const part of parts) {
+        // match format: [input, start, end, lastN]
+        const match = part.match(rangeRegex);
+        if (!match)
+            return null;
+        if (match[1]) {
+            const start = Number.parseInt(match[1]);
+            const end = match[2] != null ? Number.parseInt(match[2]) : fileSize - 1;
+            if (start > end)
+                return null;
+            if (start < 0 || end < 0)
+                return null;
+            if (start > fileSize - 1 || end > fileSize - 1)
+                return null;
+            ranges.push([start, end - start + 1]);
+            continue;
         }
-        return result;
-    },
-    pick: (obj, keys) => {
-        const result = {};
-        for (const key of keys)
-            result[key] = obj[key];
-        return result;
-    },
-    merge: (...sources) => {
-        return Object.assign({}, ...sources);
-    },
-    mergeInto: (...sources) => {
-        return Object.assign(...sources);
-    },
-};
-export const str = {
-    substitute: (inputStr, substitionMap) => {
-        const subPairs = substitionMap instanceof Map ? [...substitionMap] : Object.entries(substitionMap);
-        return subPairs.reduce((acc, [key, value]) => acc.replaceAll(key, value), inputStr);
-    },
+        if (match[3]) {
+            const lastN = Number.parseInt(match[3]);
+            const start = fileSize + lastN;
+            if (start < 0)
+                return null;
+            ranges.push([start, -lastN]);
+            continue;
+        }
+    }
+    return ranges;
 };
 export const numberToBytes = (num) => {
     if (check.number.float(num)) {
